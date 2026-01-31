@@ -1,8 +1,6 @@
 # Ares Payload
----
 1. **Update:** Dec 19, 2025
 2. **Author:** Mann Patel
----
 
 Note: Documentation reflects the Osiris Payload
 
@@ -19,8 +17,6 @@ Note: Documentation reflects the Osiris Payload
   10. [Development Notes](#development-notes)
   11. [Hardware Naming Convention](#hardware-naming-convention)
   12. [Future Enhancements](#future-enhancements)
-
----
 
 ## Overview
 
