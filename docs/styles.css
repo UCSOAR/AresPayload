@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Fira+Sans:wght@400;600&family=Fira+Mono&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    max-width: 90ch;
+    padding: 1em 3em;
+    margin: auto;
+    font-family: "Crimson Text", serif;
+    font-size: calc(1rem + 0.4vw);
+    line-height: calc(1.2em + 0.25vw);
+    accent-color: #505080;
+    background-color: white;
+    color: #111;
+}
+
+h1, h2, h3, h4 {
+    font-family: "Fira Sans", sans-serif;
+    text-wrap: balance;
+    line-height: 1.1em;
+}
+
+h1 {
+    font-size: 2em;
+    font-weight: bold;
+    margin-top: 0em;
+    margin-bottom: 0.4em;
+}
+
+h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 0.6em;
+    margin-bottom: 0.4em;
+}
+
+h3 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 0.6em;
+    margin-bottom: 0.2em;
+}
+
+a:link {
+    color: #505080;
+    text-decoration: none;
+    border-bottom: 1px dotted;
+}
+
+a:visited {
+    color: #707070; ;
+    text-decoration: none;
+    border-bottom: 1px dotted;
+}
+
+a:hover {
+    text-decoration: none;
+    border-bottom: 3px dotted;
+}
+
+ul {
+    list-style-type: square;
+}
+
+li {
+    padding-bottom: 0.3em;
+}
+
+img {
+    max-width: 100%;
+}
+
+.sideimage {
+    margin-left: 1em;
+    margin-bottom: 1em;
+    padding-left: 1em;
+    float: right;
+    width: 20%;
+}
+
+.fullimage {
+    width: 95%;
+    margin: 1em auto;
+    display: block;
+}
+
+.covers {
+    margin-left: 0em;
+    padding-left: 0em;
+}
+
+.covers td {
+    padding: 0em 1em 1em 0em;
+    background: white;
+    border: 0;
+}
+
+table {
+    border-style: none;
+    border-collapse: collapse;
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+code, pre, tt {
+    font-family: "Fira Mono", monospace;
+}
+
+pre {
+    clear: none;
+    background-color: #FCFCFE;
+    border-color: #f0f0fa;
+    margin: 0.5em;
+    padding: 0.5em;
+    border-style: solid;
+    border-width: 1px;
+    white-space: pre-wrap;
+}
+
+blockquote {
+    margin: 1em 0em;
+    padding: 0.5em 1.5em;
+    background: rgb(238, 242, 246);
+    border-style: solid;
+    border-width: 1px;
+    border-color: #C0D4EE;
+    overflow: hidden;
+}
+
+.note, .tip {
+    background-color: #ffffcc;
+    padding: 1em;
+    margin: 1em 0;
+    border-left: 4px solid #ffeb3b;
+}
+
+.note:before {
+    content: "Note: ";
+    font-weight: bold;
+}
+
+.back-link {
+    font-size: 0.9em;
+    margin-bottom: 1em;
+    display: inline-block;
+}
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1em;
+    margin-top: 1em;
+}
+
+.project-card {
+    border: 1px solid #e0e0e0;
+    padding: 1em;
+    background-color: #fafafa;
+}
+
+.project-card h3 {
+    margin-top: 0;
+    font-size: 1.1em;
+}
+
+.project-card p {
+    font-size: 0.95em;
+    line-height: 1.4em;
+    margin-bottom: 0.5em;
+}
+
+.skill-section {
+    margin-bottom: 1.5em;
+}
+
+.skill-section h3 {
+    font-size: 1em;
+    margin-bottom: 0.5em;
+}
+
+.skill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-bottom: 1em;
+}
+
+.skill-item {
+    background-color: #e8e8f0;
+    padding: 0.3em 0.8em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: "Fira Sans", sans-serif;
+}
+
+.tech-stack {
+    background-color: #f5f5f5;
+    padding: 1em;
+    margin-top: 1.5em;
+    border: 1px solid #e0e0e0;
+}
+
+.tech-stack h3 {
+    margin-top: 0;
+}
+
+.tech-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-top: 0.5em;
+}
+
+.tech-item {
+    background-color: #e8e8f0;
+    padding: 0.3em 0.8em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: "Fira Sans", sans-serif;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 1em;
+    }
+
+    .sideimage {
+        float: none;
+        width: 50%;
+        margin: 1em auto;
+        display: block;
+    }
+}

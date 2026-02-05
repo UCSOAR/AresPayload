@@ -1,13 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOAR Payload Docs</title>
-</head>
-<body>
-    <h1>Hello World!</h1>
-    <p>Documentation Goes Here!</p>
-</body>
-</html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>AresPayload Wiki - Osiris Payload Documentation</title>
+		<link rel="stylesheet" href="styles.css">
+		<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+		<script>
+			mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+		</script>
+	</head>
+	<body>
+		<h1>Welcome to the AresPayload wiki!</h1>
 
+		<blockquote>
+			<strong>Update:</strong> Dec 19, 2025<br>
+			<strong>Author:</strong> Mann Patel<br>
+			Note: Documentation reflects the Osiris Payload
+		</blockquote>
+
+		<h2>Table of Contents</h2>
+		<ol>
+			<li><a href="#ares-payload">Ares Payload</a></li>
+			<li><a href="#system-architecture">System Architecture</a></li>
+			<li><a href="#data-flow">Data Flow</a></li>
+			<li><a href="#task-details">Task Details</a></li>
+			<li><a href="#state-machine-details">State Machine Details</a></li>
+			<li><a href="#communication-interfaces">Communication Interfaces</a></li>
+			<li><a href="#getting-started">Getting Started</a></li>
+			<li><a href="#example-usage">Example Usage</a></li>
+			<li><a href="#key-design-patterns">Key Design Patterns</a></li>
+			<li><a href="#development-notes">Development Notes</a></li>
+			<li><a href="#hardware-naming-convention">Hardware Naming Convention</a></li>
+			<li><a href="#future-enhancements">Future Enhancements</a></li>
+		</ol>
+
+		<h2 id="overview">Overview</h2>
+		<p>The Osiris Payload System is an embedded flight computer designed for rocket payloads. It runs on an STM32H7 microcontroller using FreeRTOS and manages sensor data collection, state transitions, and hardware control throughout a rocket's flight.</p>
+
+		<h2 id="system-architecture">System Architecture</h2>
+
+		<h3>High-Level Design</h3>
+		<p>The system follows a task-based architecture using FreeRTOS, where different subsystems run as independent tasks that communicate via command queues. A state machine manages the flight phases and controls hardware accordingly.</p>
+
+		<div class="mermaid">
+			flowchart TD
+			A[Main System<br/>main_system.cpp]
+			A -->|Initializes all tasks| B[Tasks]
+			A -->|Initializes all tasks| C[Drivers]
+		</div>
+
+		<h2>Core Components</h2>
+
+		<blockquote>
+			Sensors are named after Nintendo characters (God knows why?) :(
+		</blockquote>
+
+		<ol>
+			<li><strong>Mario & Luigi</strong>: LPS22HH barometer</li>
+			<li><strong>Bowser</strong>: MS5611 barometer</li>
+			<li><strong>Toopy & Binoo</strong>: LSM6DSO IMUs</li>
+		</ol>
+
+		<h3>1. Task System</h3>
+		<p>The system uses multiple FreeRTOS tasks that run concurrently:</p>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Task</th>
+					<th>Priority</th>
+					<th>Purpose</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><strong>FlightTask</strong></td>
+					<td>2</td>
+					<td>Main flight logic and state machine coordination</td>
+				</tr>
+				<tr>
+					<td><strong>IMUTask</strong></td>
+					<td>2</td>
+					<td>Reads IMU (Inertial Measurement Unit) data</td>
+				</tr>
+				<tr>
+					<td><strong>BaroTask</strong></td>
+					<td>2</td>
+					<td>Reads barometer/pressure sensor data</td>
+				</tr>
+				<tr>
+					<td><strong>DebugTask</strong></td>
+					<td>2</td>
+					<td>Handles debug output via UART</td>
+				</tr>
+				<tr>
+					<td><strong>CubeTask</strong></td>
+					<td>2</td>
+					<td>Framework task (Cube++ RTOS wrapper)</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h3>2. State Machine (OsirisSM)</h3>
+		<p>The flight computer transitions through 5 states during operation:</p>
+		<pre><code>PRELAUNCH -> LAUNCH -> DROGUE -> MAIN -> POSTLAUNCH</code></pre>
+		<p>Each state controls different hardware peripherals and responds to different commands.</p>
+
+		<h3>3. Sensor Drivers</h3>
+
+		<h4>Barometers</h4>
+		<ul>
+			<li><strong>LPS22HH</strong> (x2): "Mario" and "Luigi" - SPI-based pressure/temperature sensors</li>
+			<li><strong>MS5611</strong> ("Bowser"): I2C-based pressure/temperature sensor</li>
+		</ul>
+
+		<h4>IMU (Inertial Measurement Unit)</h4>
+		<ul>
+			<li><strong>LSM6DSO</strong> (x2): "Toopy" (I2C) and "Binoo" (SPI) - Accelerometer and gyroscope sensors</li>
+		</ul>
+
+		<h3>4. Hardware Control (GPIO)</h3>
+		<p>The system controls various hardware via GPIO pins:</p>
+		<ul>
+			<li><strong>SOL1, SOL2, SOL3</strong>: Solenoid valves</li>
+			<li><strong>COMPRESSOR</strong>: Air compressor control</li>
+			<li><strong>LED_GREEN, LED_BLUE</strong>: Status indicators</li>
+		</ul>
+
+		<h2 id="data-flow">Data Flow</h2>
+
+		<div class="mermaid">
+			flowchart LR
+			S[Sensors]
+			T[Tasks]
+			C[Commands]
+			SM[State Machine]
+			HC[Hardware Control]
+			DS[Data Structures]
+			S --> T
+			T --> C
+			C --> SM
+			SM --> HC
+			SM -->|reads/writes| DS
+			S -->|writes| DS
+		</div>
+
+		<h3>Command Structure</h3>
+		<p>Tasks communicate using a <code>Command</code> object with:</p>
+		<ul>
+			<li><strong>Command Type</strong>: REQUEST_COMMAND, DATA_COMMAND, CONTROL_ACTION, etc.</li>
+			<li><strong>Task Command</strong>: Specific action identifier</li>
+			<li><strong>Data Payload</strong>: Optional data (e.g., sensor readings)</li>
+		</ul>
+
+		<h3>Data Structures</h3>
+		<pre><code>typedef struct BarometerData {
+    float marioPressure;        // LPS22HH U3
+    float marioTemperature;
+    float luigiPressure;        // LPS22HH U4
+    float luigiTemperature;
+    uint32_t bowserPressure;    // MS5611
+    uint32_t bowserTemperature;
+} BarometerData;
+
+typedef struct IMUData {
+    float xAccel;
+    float yAccel;
+    float zAccel;
+} IMUData;</code></pre>
+
+		<h2 id="task-details">Task Details</h2>
+
+		<h3>FlightTask</h3>
+		<ul>
+			<li><strong>Purpose</strong>: Coordinates overall flight logic</li>
+			<li><strong>Key Responsibility</strong>: Manages the OsirisSM state machine</li>
+			<li><strong>Communication</strong>: Receives data from IMUTask and BaroTask</li>
+		</ul>
+
+		<h3>IMUTask</h3>
+		<ul>
+			<li><strong>Purpose</strong>: Reads acceleration and gyroscope data</li>
+			<li><strong>Sensors</strong>: LSM6DSO (Toopy on I2C, Binoo on SPI)</li>
+			<li><strong>Commands</strong>:
+				<ul>
+					<li><code>IMU_REQUEST_LIN_ACC</code>: Request linear acceleration</li>
+					<li><code>IMU_REQUEST_ANG_ACC</code>: Request angular acceleration</li>
+				</ul>
+			</li>
+			<li><strong>Output</strong>: Sends <code>IMUData</code> to FlightTask</li>
+		</ul>
+
+		<h3>BaroTask</h3>
+		<ul>
+			<li><strong>Purpose</strong>: Reads pressure and temperature data</li>
+			<li><strong>Sensors</strong>:
+				<ul>
+					<li>LPS22HH (Mario and Luigi on SPI)</li>
+					<li>MS5611 (Bowser on I2C)</li>
+				</ul>
+			</li>
+			<li><strong>Commands</strong>:
+				<ul>
+					<li><code>BARO_REQUEST_NEW_SAMPLE</code>: Read all sensors</li>
+					<li><code>BARO_REQUEST_DEBUG</code>: Print sensor values</li>
+					<li><code>BARO_REQUEST_FLASH_LOG</code>: Log data to flash memory</li>
+				</ul>
+			</li>
+			<li><strong>Output</strong>: Sends <code>BarometerData</code> to FlightTask</li>
+		</ul>
+
+		<h3>DebugTask</h3>
+		<ul>
+			<li><strong>Purpose</strong>: Handles UART debug output</li>
+			<li><strong>Interface</strong>: USART6 (accessible via <code>Driver::uart6</code>)</li>
+		</ul>
+
+		<h2 id="state-machine-details">State Machine Details</h2>
+
+		<h3>State Transitions</h3>
+
+		<div class="mermaid">
+			flowchart TD
+			PRE[PRELAUNCH]
+			LAUNCH[LAUNCH]
+			DROGUE[DROGUE]
+			MAIN[MAIN]
+			POST[POSTLAUNCH]
+			PRE -->|OSC_PRELAUNCH_TO_LAUNCH| LAUNCH
+			LAUNCH -->|OSC_LAUNCH_TO_DROGUE| DROGUE
+			DROGUE -->|OSC_DROGUE_TO_MAIN| MAIN
+			MAIN -->|OSC_MAIN_TO_POSTLAUNCH| POST
+		</div>
+
+		<h3>State Behaviors</h3>
+
+		<h4>PRELAUNCH</h4>
+		<ul>
+			<li><strong>Hardware</strong>: All peripherals OFF (safe state)</li>
+			<li><strong>Control</strong>: Can control SOL1, SOL2, SOL3, and COMPRESSOR</li>
+			<li><strong>LED</strong>: Green LED ON</li>
+			<li><strong>Purpose</strong>: Ground operations and testing</li>
+		</ul>
+
+		<h4>LAUNCH</h4>
+		<ul>
+			<li><strong>Hardware</strong>: All peripherals OFF</li>
+			<li><strong>Purpose</strong>: Rocket is ascending</li>
+			<li><strong>Transitions to</strong>: DROGUE (typically at apogee)</li>
+		</ul>
+
+		<h4>DROGUE</h4>
+		<ul>
+			<li><strong>Hardware</strong>: Can control SOL1, SOL2, SOL3, and COMPRESSOR</li>
+			<li><strong>Purpose</strong>: Drogue parachute deployed, descending</li>
+			<li><strong>Transitions to</strong>: MAIN (at specific altitude)</li>
+		</ul>
+
+		<h4>MAIN</h4>
+		<ul>
+			<li><strong>Hardware</strong>: Can control SOL3 and COMPRESSOR only</li>
+			<li><strong>Purpose</strong>: Main parachute deployed</li>
+			<li><strong>Transitions to</strong>: POSTLAUNCH (after landing)</li>
+		</ul>
+
+		<h4>POSTLAUNCH</h4>
+		<ul>
+			<li><strong>Hardware</strong>: All peripherals OFF</li>
+			<li><strong>Purpose</strong>: Landed, safe state</li>
+		</ul>
+
+		<h3>Emergency Override</h3>
+		<p>From any state, you can return to PRELAUNCH using:</p>
+		<pre><code>OSC_ANY_TO_PRELAUNCH</code></pre>
+
+		<h2 id="communication-interfaces">Communication Interfaces</h2>
+
+		<h3>SPI (Serial Peripheral Interface)</h3>
+		<ul>
+			<li><strong>SPI2</strong>: LPS22HH sensors (Mario and Luigi)</li>
+			<li><strong>SPI6</strong>: LSM6DSO sensor (Binoo)</li>
+		</ul>
+
+		<h3>I2C</h3>
+		<ul>
+			<li><strong>I2C2</strong>: MS5611 (Bowser) and LSM6DSO (Toopy)</li>
+		</ul>
+
+		<h3>UART</h3>
+		<ul>
+			<li><strong>USART6</strong>: Debug output (configured in <code>Driver::uart6</code>)</li>
+		</ul>
+
+		<h2 id="getting-started">Getting Started</h2>
+
+		<h3>System Initialization</h3>
+		<p>The system boots through <code>main_system.cpp</code>:</p>
+
+		<pre><code>void run_main() {
+    // 1. Initialize all tasks
+    CubeTask::Inst().InitTask();
+    DebugTask::Inst().InitTask();
+    FlightTask::Inst().InitTask();
+    IMUTask::Inst().InitTask();
+    BaroTask::Inst().InitTask();
+
+    // 2. Print boot info
+    SOAR_PRINT("\n-- SOAR SYSTEM --\n");
+
+    // 3. Test sensors (example)
+    Command testIMU(REQUEST_COMMAND, IMU_REQUEST_LIN_ACC);
+    IMUTask::Inst().GetEventQueue()->Send(testIMU);
+
+    // 4. Start FreeRTOS scheduler
+    osKernelStart();
+}</code></pre>
+
+		<h3>Task Configuration</h3>
+		<p>Task priorities and stack sizes are defined in <code>SystemDefines.hpp</code>:</p>
+
+		<pre><code>// All tasks currently have priority 2
+constexpr uint8_t FLIGHT_TASK_RTOS_PRIORITY = 2;
+constexpr uint8_t IMU_TASK_RTOS_PRIORITY = 2;
+constexpr uint8_t BARO_TASK_RTOS_PRIORITY = 2;
+
+// Stack sizes (in words)
+constexpr uint16_t FLIGHT_TASK_STACK_DEPTH_WORDS = 512;
+constexpr uint16_t IMU_TASK_STACK_DEPTH_WORDS = 512;
+constexpr uint16_t BARO_TASK_STACK_DEPTH_WORDS = 512;</code></pre>
+
+		<h2 id="example-usage">Example Usage</h2>
+
+		<h3>Requesting IMU Data</h3>
+		<pre><code>// Create a command to request linear acceleration
+Command cmd(REQUEST_COMMAND, IMU_REQUEST_LIN_ACC);
+
+// Send to IMU task
+IMUTask::Inst().GetEventQueue()->Send(cmd);
+
+// IMUTask will respond by sending IMUData to FlightTask</code></pre>
+
+		<h3>Controlling Hardware</h3>
+		<pre><code>// Open solenoid valve 1
+Command cmd(CONTROL_ACTION, OSC_OPEN_SOL1);
+FlightTask::Inst().GetEventQueue()->Send(cmd);
+
+// Close solenoid valve 1
+Command cmd2(CONTROL_ACTION, OSC_CLOSE_SOL1);
+FlightTask::Inst().GetEventQueue()->Send(cmd2);</code></pre>
+
+		<h3>Reading Barometer Data</h3>
+		<pre><code>// Request new barometer sample
+Command cmd(REQUEST_COMMAND, BARO_REQUEST_NEW_SAMPLE);
+BaroTask::Inst().GetEventQueue()->Send(cmd);
+
+// Request debug output of barometer values
+Command cmd2(REQUEST_COMMAND, BARO_REQUEST_DEBUG);
+BaroTask::Inst().GetEventQueue()->Send(cmd2);</code></pre>
+
+		<h2 id="key-design-patterns">Key Design Patterns</h2>
+
+		<h3>1. Singleton Pattern</h3>
+		<p>Each task uses <code>Task::Inst()</code> to access a single instance:</p>
+		<pre><code>FlightTask::Inst().GetEventQueue()->Send(command);</code></pre>
+
+		<h3>2. Command Pattern</h3>
+		<p>All inter-task communication uses Command objects with specific command types</p>
+
+		<h3>3. State Pattern</h3>
+		<p>Flight logic organized into distinct states with entry/exit handlers</p>
+
+		<h3>4. Hardware Abstraction</h3>
+		<p>GPIO operations wrapped in namespace functions:</p>
+		<pre><code>GPIO::LED_GREEN::On();
+GPIO::SOL1::Off();</code></pre>
+
+	</body>
+</html>
